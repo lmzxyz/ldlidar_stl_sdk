@@ -41,7 +41,7 @@ int main() {
   int counter = 0;
   uint16_t lasttimestamp = 0;
   uint16_t highesttimediff = 0;
-  bool should_loop = true
+  bool should_loop = true;
 
   while (should_loop) {
     if (lidar->IsFrameReady()) {
