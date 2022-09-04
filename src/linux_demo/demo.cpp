@@ -38,27 +38,52 @@ int main() {
   }
 
   auto last_time = std::chrono::steady_clock::now();
+  int counter = 0;
+  uint16_t lasttimestamp = 0;
+  uint16_t highesttimediff = 0;
+  bool should_loop = true
+
+  while (should_loop) {
+    if (lidar->IsFrameReady()) {
+      lidar->ResetFrameReady();
+      last_time = std::chrono::steady_clock::now();
+      uint16_t timediff = lasttimestamp - lidar->GetTimestamp();
+      lasttimestamp = lidar->GetTimestamp();
+      std::cout << "[ldrobot] Timestamp: " << lasttimestamp << std::endl; 
+      std::cout << "[ldrobot] Timediff: " << timediff << std::endl;
+      if (timediff > highesttimediff)
+        highesttimediff = timediff;
+      ldlidar::Points2D laser_scan = lidar->GetLaserScanData();
+      std::cout << "[ldrobot] laser_scan.size() " << laser_scan.size() << std::endl;
+  
+    }
+
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-last_time).count() > 1000) {
+			std::cout << "[ldrobot] lidar pub data is time out, please check lidar device" << std::endl;
+      should_loop = false;
+			//exit(EXIT_FAILURE);
+		}
+    counter++;
+    usleep(1000*100);  // sleep 100ms  == 10Hz
+  }
 
   while (1) {
     if (lidar->IsFrameReady()) {
       lidar->ResetFrameReady();
       last_time = std::chrono::steady_clock::now();
-      std::cout << "[ldrobot] speed(Hz): " << lidar->GetSpeed() << std::endl;
+      lasttimestamp = lidar->GetTimestamp();
+      std::cout << "[ldrobot2] Timestamp: " << lidar->GetTimestamp() << std::endl;
       ldlidar::Points2D laser_scan = lidar->GetLaserScanData();
-      std::cout << "[ldrobot] laser_scan.size() " << laser_scan.size() << std::endl;
-      ldlidar::PointData point = laser_scan[0];
-      std::cout << "[ldrobot] angle: " << point.angle << " "
-                  << "distance(mm): " << point.distance << " "
-                  << "intensity: " << (int)point.intensity << " "
-                  << std::endl;
+      std::cout << "[ldrobot2] laser_scan.size() " << laser_scan.size() << std::endl;
+  
     }
 
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-last_time).count() > 100000) {
-			std::cout << "[ldrobot] lidar pub data is time out, please check lidar device" << std::endl;
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-last_time).count() > 1000) {
+			std::cout << "[ldrobot2] lidar pub data is time out, please check lidar device" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-
-    usleep(1000*100);  // sleep 100ms  == 10Hz
+    counter++;
+    usleep(1000*500);  // sleep 100ms  == 10Hz
   }
 
   cmd_port->Close();
